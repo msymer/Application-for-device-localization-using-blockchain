@@ -1,0 +1,896 @@
+<% include ./eth-messages %>
+<script>
+  let contract;
+  let account;
+
+  const desired_network_version = 3; //3 = Ropsten
+  let transaction_config = {};
+  const contr_address = '0x2cb16D83B970ABf4da3b6053a4EFBFcEC67FE449'; //this is not actual address
+  const abi = [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_removedAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "removeAdmin",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x1785f53c"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_newAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setProcessAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x20a2b853"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_message",
+          "type": "string"
+        }
+      ],
+      "name": "log",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x41304fac"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "speeds",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x48a357bc"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "processAddress",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x4c1861c2"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "addAdmin",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x70480275"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x715018a6"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "description",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x7284e416"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8da5cb5b"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8f32d59b"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_newDescription",
+          "type": "string"
+        }
+      ],
+      "name": "setDescription",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x90c3f38f"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "admins",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xa5de3619"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isAdmin",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xb6db75a0"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_speedType",
+          "type": "uint8"
+        },
+        {
+          "name": "_speedValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "setSpeed",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xc6d812ae"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf2fde38b"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "DataSaved",
+      "type": "event",
+      "signature": "0x9674cf366726a3a204dd53a593da99ca877fec7b1c706c7deb863b4ab2957625"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "deviceId",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "name": "locationTime",
+          "type": "uint256"
+        }
+      ],
+      "name": "DataDeleted",
+      "type": "event",
+      "signature": "0x6edbeaf9a522184fc8ba687c30badf4f11b0e4b46eaf2665e27f6b6566813546"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "deviceId",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "DeviceOwnerChanged",
+      "type": "event",
+      "signature": "0x4109baed23018c309c7aa2ceb77752aa863b6c2aa75d8c3986779a99161987de"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "deviceId",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "name": "rights",
+          "type": "uint256"
+        }
+      ],
+      "name": "DeviceOwnershipRightsChanged",
+      "type": "event",
+      "signature": "0x57ffa061c5593968d3205735e4db14978ca13db582a29a10a46d9491e306ed26"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "adminAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "name": "Log",
+      "type": "event",
+      "signature": "0x0738f4da267a110d810e6e89fc59e46be6de0c37b1d5cd559b267dc3688e74e0"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "adminAddress",
+          "type": "address"
+        }
+      ],
+      "name": "DescriptionChanged",
+      "type": "event",
+      "signature": "0x4ee2636d9d8e05a7615cc0fd2e52ac7da430b5d23646c92a265edd47f72dc342"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "adminAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newAddress",
+          "type": "address"
+        }
+      ],
+      "name": "ProcessContractAddressChanged",
+      "type": "event",
+      "signature": "0x366619d45b7900571db2211b52c00e03332cff82a0e1ec333449169fb2e303c4"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "adminAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "speedType",
+          "type": "uint8"
+        },
+        {
+          "indexed": true,
+          "name": "newValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "SpeedChanged",
+      "type": "event",
+      "signature": "0x056edb3f502b27bbe7ee1e1d22e1cf6b788b6b04815489c8bdde48eb3385a476"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "initAdmin",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "AdminAdded",
+      "type": "event",
+      "signature": "0xbf3f493c772c8c283fd124432c2d0f539ab343faa04258fe88e52912d36b102b"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "initAdmin",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "removedAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "AdminRemoved",
+      "type": "event",
+      "signature": "0xdb9d5d31320daf5bc7181d565b6da4d12e30f0f4d5aa324a992426c14a1d19ce"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event",
+      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "name": "_dateFrom",
+          "type": "uint256"
+        },
+        {
+          "name": "_dateTo",
+          "type": "uint256"
+        }
+      ],
+      "name": "getData",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "name": "",
+          "type": "int32"
+        },
+        {
+          "name": "",
+          "type": "int32"
+        },
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xfb2899c1"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "name": "_dateFrom",
+          "type": "uint256"
+        },
+        {
+          "name": "_dateTo",
+          "type": "uint256"
+        },
+        {
+          "name": "_speedType",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDataWithSpeedCheck",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "name": "",
+          "type": "int32"
+        },
+        {
+          "name": "",
+          "type": "int32"
+        },
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x2ca35b5c"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_latitude",
+          "type": "int32"
+        },
+        {
+          "name": "_longitude",
+          "type": "int32"
+        },
+        {
+          "name": "_time",
+          "type": "uint256"
+        },
+        {
+          "name": "_speedType",
+          "type": "uint256"
+        }
+      ],
+      "name": "checkInputData",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x53225a2d"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_speedType",
+          "type": "uint256"
+        },
+        {
+          "name": "_latitude1",
+          "type": "int32"
+        },
+        {
+          "name": "_longitude1",
+          "type": "int32"
+        },
+        {
+          "name": "_time1",
+          "type": "uint256"
+        },
+        {
+          "name": "_latitude2",
+          "type": "int32"
+        },
+        {
+          "name": "_longitude2",
+          "type": "int32"
+        },
+        {
+          "name": "_time2",
+          "type": "uint256"
+        }
+      ],
+      "name": "checkOutsideInputData",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x424ac1a2"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_latitude",
+          "type": "int32"
+        },
+        {
+          "name": "_longitude",
+          "type": "int32"
+        },
+        {
+          "name": "_time",
+          "type": "uint256"
+        },
+        {
+          "name": "_note",
+          "type": "string"
+        }
+      ],
+      "name": "saveData",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x6c86a444"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_speedType",
+          "type": "uint256"
+        },
+        {
+          "name": "_latitude",
+          "type": "int32"
+        },
+        {
+          "name": "_longitude",
+          "type": "int32"
+        },
+        {
+          "name": "_time",
+          "type": "uint256"
+        },
+        {
+          "name": "_note",
+          "type": "string"
+        }
+      ],
+      "name": "saveDataWithSpeedCheck",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xd5df479f"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_localizationTime",
+          "type": "uint256"
+        }
+      ],
+      "name": "deleteData",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xd452e171"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        }
+      ],
+      "name": "addDeviceOwner",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xd697a09d"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "changeDeviceOwner",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x231f9c57"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_rights",
+          "type": "uint256"
+        }
+      ],
+      "name": "changeDeviceOwnershipRights",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x043e7fe3"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        }
+      ],
+      "name": "getDeviceOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xd611b2d8"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_dateFrom",
+          "type": "uint256"
+        },
+        {
+          "name": "_dateTo",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDataCount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xdd9a1fb0"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_deviceId",
+          "type": "string"
+        },
+        {
+          "name": "_dateFrom",
+          "type": "uint256"
+        },
+        {
+          "name": "_dateTo",
+          "type": "uint256"
+        },
+        {
+          "name": "_speedType",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDataCountWithSpeedCheck",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x5ccf69ae"
+    }
+  ];
+
+  let connectionIsOk = false;
+
+  //Inits contract.
+  function initConnection() {
+    if (!web3IsConnected()) {
+      showErrorMsg('MetaMask or another injected Web3 was not found. Please install MetaMask or another provider and reload the page.');
+      return;
+    }
+    contract = web3.eth.contract(abi).at(contr_address);
+
+    if (!accountIsAvailable()) {
+      showErrorMsg('No available ethereum account found. Are you logged in MetaMask? Please provide an account and reload the page.');
+      return;
+    }
+    account = web3.eth.accounts[0];
+
+    if (!networkIsCorrect(desired_network_version)) {
+      showErrorMsg('You are connected to the wrong network. Please connect to the Ropsten network and reload the page.');
+      return;
+    }
+    transaction_config = {gasPrice: web3.toWei(10, 'Gwei')};
+    connectionIsOk = true;
+  }
+
+  //Checks if the web3 is found.
+  function web3IsConnected() {
+    if (typeof (web3) == 'undefined') {
+      return false;
+    }
+    return true;
+  }
+
+  //Checks if an account is available.
+  function accountIsAvailable() {
+    if (web3) {
+      if (!web3.eth.accounts.length) {
+        return false;
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  //Checks if the blockchain network is correct.
+  function networkIsCorrect(desiredNetwork) {
+    if (web3) {
+      if (web3.version.network != desiredNetwork) {
+        return false;
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+</script>
+<% include ./eth-functions %>

@@ -1,0 +1,93 @@
+<% include ./eth-functions %>
+<% include ./map-lib %>
+<script>
+    let locationData = [];
+
+    $(function () {
+        initContract();
+        showMapSelection();
+    });
+
+    //Inits the contract.
+    function initContract() {
+        initConnection();
+        if (!connectionIsOk) {
+            $('#map-settings-box').hide();
+            $('#mapdiv').hide();
+        }
+    }
+
+    //Returns identification hashes of the device.
+    async function getIdentificationHashes(deviceName) {
+        try {
+            const result = await $.ajax({
+                method: 'GET',
+                url: '/intr/get-identification-hashes',
+                data: { deviceName: deviceName },
+            });
+            return result.identificationHashes;
+        } catch (error) {
+            console.log(error);
+            throw new Error('Identification hash not found.');
+        }
+    }
+
+    async function showMapSelection() {
+        if (connectionIsOk) {
+            hideMsgs();
+            $showMapButton.attr("disabled", "disabled");
+            showInfoMsg('Loading data from the blockchain, please wait...');
+            try {
+                const deviceName = $("[name='deviceName']").val();
+                const startDate = transferTimeToInt($('#datetimes').data("daterangepicker").startDate._d);
+                const endDate = transferTimeToInt($('#datetimes').data("daterangepicker").endDate._d);
+                const showPathes = $('#showPathes').is(":checked");
+                const showMarkers = $('#showMarkers').is(":checked");
+                if(!deviceName){
+                    hideMsgs();
+                    $('#mapdiv').hide();
+                    showErrorMsg('The user does not have any device.');
+                    return;
+                }
+                const idHashes = await getIdentificationHashes(deviceName);
+                let found = false;
+                locationData = [];
+                for (let i = 0; i < idHashes.length; i++) {
+                    const dataCount = getUint(await eth_getDataCountWithSpeedCheck(idHashes[i], startDate, endDate, 2));
+                    if (dataCount > 0) {
+                        found = true;
+                        for (let j = 0; j < dataCount; j++) {
+                            const record = await eth_getDataWithSpeedCheck(idHashes[i], j, startDate, endDate, 2);
+                            locationData.push(transferToLocation(record));
+                        }
+                    } else {
+                        if (found) {
+                            break;
+                        }
+                    }
+                }
+                if (found) {
+                    $('#mapdiv').show();
+                    showMap(showMarkers, showPathes);
+                    hideMsgs();
+                }else{
+                    $('#mapdiv').hide();
+                    hideMsgs();
+                    showErrorMsg('The device does not have requested data.');
+                }
+            } catch (error) {
+                console.log(error);
+            }
+            $showMapButton.removeAttr("disabled");
+        }
+    }
+
+    function transferToLocation(value) {
+        const time = ethTimeToJs(getUint(value[0]));
+        const latitude = ethCoordToJs(getUint(value[1]));
+        const longitude = ethCoordToJs(getUint(value[2]));
+        const note = value[3];
+        return new Coordinates(latitude, longitude, time, note);
+    }
+
+</script>

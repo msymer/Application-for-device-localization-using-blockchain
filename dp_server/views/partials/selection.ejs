@@ -1,0 +1,13 @@
+<div class="m-1">
+    <label for="device" class="float-left">Device</label>
+    <select class="form-control w-100 h-75 mb-3" name="<%= selectionName %>">
+        <% selectionObjects.forEach((obj) => {%>
+        <option <% if((typeof selectedObject != 'undefined') && (selectedObject == obj)) { %> <option selected>
+            <% } else { %>
+        <option>
+            <% }%>
+            <%= obj %>
+        </option>
+        <% }); %>
+    </select>
+</div>

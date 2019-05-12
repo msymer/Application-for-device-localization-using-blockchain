@@ -1,0 +1,221 @@
+<h1>API</h1>
+<hr>
+<div class="jumbotron">
+    <div>
+        <h3>Connect device to an account</h3>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th scope="row">Request</th>
+                    <td>POST</td>
+                </tr>
+                <tr>
+                    <th scope="row">URL</th>
+                    <td><samp>./api/connect</samp></td>
+                </tr>
+                <tr>
+                    <th scope="row">Body</th>
+                    <td>
+                        <p><samp>{
+                                "deviceNumber": "xxx",
+                                "connectionKey": "xxx",
+                                "username": "xxx"
+                                }</samp></p>
+                        <p><samp><b>deviceNumber: </b></samp> An unique device number.</p>
+                        <p><samp><b>connectionKey: </b></samp> The key for connecting to the accout. You can find it <a href="./your-devices">here</a>.</p>
+                        <p><samp><b>username: </b></samp> Username of the user that the device connects to.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Successful response</th>
+                    <td>
+                        <p><samp>{
+                                "result": true
+                                }</samp></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Error response</th>
+                    <td>
+                        <p><samp>{
+                                "result": false,
+                                "msg": reason
+                                }</samp></p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-5">
+        <h3>Remove device from an account</h3>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th scope="row">Request</th>
+                    <td>DELETE</td>
+                </tr>
+                <tr>
+                    <th scope="row">URL</th>
+                    <td><samp>./api/remove-device</samp></td>
+                </tr>
+                <tr>
+                    <th scope="row">Body</th>
+                    <td>
+                        <p><samp>{
+                                "deviceNumber": "xxx",
+                                "username": "xxx"
+                                }</samp></p>
+                        <p><samp><b>deviceNumber: </b></samp> An unique device number.</p>
+                        <p><samp><b>username: </b></samp> The username of the connected user.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Successful response</th>
+                    <td>
+                        <p><samp>{
+                                "result": true
+                                }</samp></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Error response</th>
+                    <td>
+                        <p><samp>{
+                                "result": false,
+                                "msg": reason
+                                }</samp></p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-5">
+        <h3>Send localization data</h3>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th scope="row">Request</th>
+                    <td>POST</td>
+                </tr>
+                <tr>
+                    <th scope="row">URL</th>
+                    <td><samp>./api/send-data</samp></td>
+                </tr>
+                <tr>
+                    <th scope="row">Body</th>
+                    <td>
+                        <p><samp>{
+                                "deviceNumber": "xxx",
+                                "coordinates": {
+                                    "latitude": 0,
+                                    "longitude": 0,
+                                    "time": 0000000000000,
+                                    "note": "xxx"
+                                }
+                            }</samp></p>
+                        <p><samp><b>deviceNumber: </b></samp> An unique device number.</p>
+                        <p><samp><b>latitude: </b></samp> A latitude.</p>
+                        <p><samp><b>longitude: </b></samp> A longitude.</p>
+                        <p><samp><b>time: </b></samp> A timestamp.</p>
+                        <p><samp><b>note: </b></samp> A note.</p>
+                    </td>
+                </tr>
+                <tr>
+                        <th scope="row">Successful response</th>
+                        <td>
+                            <p><samp>{
+                                    "result": true
+                                    }</samp></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Error response</th>
+                        <td>
+                            <p><samp>{
+                                    "result": false,
+                                    "msg": reason
+                                    }</samp></p>
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-5">
+        <h3>Get device identificator hashes</h3>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th scope="row">Request</th>
+                    <td>GET</td>
+                </tr>
+                <tr>
+                    <th scope="row">URL</th>
+                    <td><samp>./api/get-device-identificators</samp></td>
+                </tr>
+                <tr>
+                    <th scope="row">Body</th>
+                    <td>
+                        <p><samp><b>deviceNumber: </b></samp> An unique device number.</p>
+                        <p><samp><b>receivingKey: </b></samp> The receiving key of the device.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Successful response</th>
+                    <td>
+                        <p><samp>{
+                            "result": true,
+                            "identificationHashes": [ array of the hashes]
+                            }</samp></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Error response</th>
+                    <td>
+                        <p><samp>{
+                            "result": false,
+                            "msg": reason
+                            }</samp></p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- <div class="mt-5">
+        <h3></h3>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th scope="row">Request</th>
+                    <td>POST</td>
+                </tr>
+                <tr>
+                    <th scope="row">URL</th>
+                    <td><samp>./connect</samp></td>
+                </tr>
+                <tr>
+                    <th scope="row">Body</th>
+                    <td>
+                        <p><samp></samp></p>
+                        <p><samp><b></b></samp> </p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Successful response</th>
+                    <td>
+                        <p><samp></samp></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Error response</th>
+                    <td>
+                        <p><samp></samp></p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div> -->
+</div>

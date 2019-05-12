@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="dp_mobile.TrackingPage"
+             NavigationPage.HasBackButton="False"
+             Title="Tracking">
+    
+    <ContentPage.Content>
+        <AbsoluteLayout Padding="20">
+            <StackLayout Orientation="Vertical">
+                <Label Text="Last tracked position"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Text="Time:" 
+                           Grid.Row="0" Grid.Column="0" />
+                    <Label x:Name="timeLabel"
+                           Grid.Row="0" Grid.Column="1" />
+                    <Label Text="Longitude:" 
+                           Grid.Row="1" Grid.Column="0" />
+                    <Label x:Name="longitudeLabel"
+                           Grid.Row="1" Grid.Column="1" />
+                    <Label Text="Latitude:" 
+                           Grid.Row="2" Grid.Column="0" />
+                    <Label x:Name="latitudeLabel"
+                           Grid.Row="2" Grid.Column="1" />
+                    <Label Text="Note:" 
+                           Grid.Row="3" Grid.Column="0" />
+                    <Label x:Name="noteLabel"
+                           Grid.Row="3" Grid.Column="1" />
+                </Grid>
+
+
+                <Label x:Name="errorLabel"
+                       IsVisible="False"
+                       Margin="0,20,0,0"
+                       HorizontalOptions="Center"
+                       TextColor="Red"/>
+
+                <StackLayout Margin="0,20,0,0"
+                         Orientation="Vertical">
+                    <Entry Placeholder="Note"
+                            x:Name="noteEntry"
+                           TextChanged="NoteEntry_TextChanged"/>
+                    <StackLayout Orientation="Horizontal"
+                             HorizontalOptions="Center">
+                        <Switch x:Name="attachSwitch"/>
+                        <Label Text="Attach note permanently"
+                           VerticalOptions="Center"/>
+                    </StackLayout>
+                    <Button Text="Attach note"
+                            x:Name="attachNoteButton"
+                        Clicked="AttachNoteButton_Clicked"/>
+
+                    <ActivityIndicator x:Name="activityIndicator" 
+                                       Margin="0, 20 , 0, 0"
+                                       IsRunning="False"/>
+                </StackLayout>
+            </StackLayout>
+
+            
+            <Button Text="Track this position"
+                    x:Name="trackButton"
+                    AbsoluteLayout.LayoutBounds=".5,1,1,0.1"
+                    AbsoluteLayout.LayoutFlags="All"/>
+        </AbsoluteLayout>
+    </ContentPage.Content>
+</ContentPage>

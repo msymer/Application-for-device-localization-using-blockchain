@@ -1,0 +1,31 @@
+<div class="alert alert-warning" style="display:none" id="eth-warning-msg">
+</div>
+
+<div class="alert alert-success" style="display:none" id="eth-success-msg">
+</div>
+
+<div class="alert alert-light" style="display:none" id="eth-info-msg">
+</div>
+
+<script>
+    function showErrorMsg(text) {
+        $('#eth-warning-msg').show();
+        $('#eth-warning-msg').text(text);
+    }
+
+    function showSuccessMsg(text) {
+        $('#eth-success-msg').show();
+        $('#eth-success-msg').text(text);
+    }
+
+    function showInfoMsg(text) {
+        $('#eth-info-msg').show();
+        $('#eth-info-msg').text(text);
+    }
+
+    function hideMsgs() {
+        $('#eth-info-msg').hide();
+        $('#eth-success-msg').hide();
+        $('#eth-warning-msg').hide();
+    }
+</script>

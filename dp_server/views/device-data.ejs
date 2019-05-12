@@ -1,0 +1,95 @@
+<h1>Device data</h1>
+<hr>
+<% include ./partials/messages %>
+<% include ./partials/eth-init %>
+<% if ((typeof devices != 'undefined') && (devices.length > 0)) { %>
+<div id="toolbar" class="mb-2">
+  <div class="float-left">
+    <form class="form-inline" action="/device-data" method="GET">
+      <% if (typeof deviceName != 'undefined') { %>
+        <%- include('partials/selection', {selectionObjects: devices, selectedObject: deviceName, selectionName: 'deviceName'}); %>
+      <% } else {%>
+        <%- include('partials/selection', {selectionObjects: devices, selectionName: 'deviceName'}); %>
+      <% } %>
+      <div class="m-1">
+        <button id="button-select-device" type="submit" class="btn btn-primary">Select</button>
+      </div>
+    </form>
+  </div>
+  <% if ((typeof data != 'undefined') && (data.length > 0) && (typeof deviceName != 'undefined')) { %>
+  <div class="float-right mt-3">
+    <button id="button-send-blockchain" class="btn btn-primary m-1">Connect to the blockchain</button>
+    <button id="button-delete" class="btn btn-danger m-1">Delete selected records</button>
+  </div>
+  <% } %>
+</div>
+<% if ((typeof data != 'undefined') && (data.length > 0) && (typeof deviceName != 'undefined')) { %>
+<table id="table" data-click-to-select="true">
+  <thead>
+    <tr>
+      <th data-field="state" data-checkbox="true"></th>
+      <th data-field="time" data-formatter="dateFormatter">Time</th>
+      <th data-field="longitude">Longitude</th>
+      <th data-field="latitude">Latitude</th>
+      <th data-field="note">Note</th>
+    </tr>
+  </thead>
+</table>
+
+<script>
+  var $table = $('#table');
+  var data = <%- JSON.stringify(data) %>;
+  var deviceName = <%- JSON.stringify(deviceName) %>;
+  var $buttonDelete = $('#button-delete');
+  var $buttonBlockchain = $('#button-send-blockchain');
+
+  function dateFormatter(value) {
+    // return new Date(value).toISOString().replace(/-/g, '.').replace('T', ' - ');
+    var d = new Date(value);
+    return d.toString();
+  }
+
+  window.operateEvents = {
+    'click .remove-records-button': function (e, value, row, index) {
+      $.ajax({
+        method: "DELETE",
+        url: "/intr/delete-records",
+        data: { deviceName: row.name, receivingKey: row.receivingKey },
+      }).done(function (data) {
+        location.reload();
+      }).fail(function (xhr, status, error) {
+        alert(JSON.parse(xhr.responseText).msg);
+      });
+    }
+  }
+
+  $(function () {
+    $('#table').bootstrapTable({ data: data });
+
+    $buttonDelete.click(function () {
+      if ($table.bootstrapTable('getSelections').length > 0) {
+        var selection = $table.bootstrapTable('getSelections');
+        $.ajax({
+          method: "DELETE",
+          url: "/intr/delete-records",
+          data: { selected: JSON.stringify($table.bootstrapTable('getSelections').map(s => s._id)), deviceName: deviceName },
+        }).done(function (data) {
+          location.reload();
+        }).fail(function (xhr, status, error) {
+          alert(JSON.parse(xhr.responseText).msg);
+        });
+      }
+    });
+
+    $buttonBlockchain.click(function () {
+      blockchainButtonClick();
+    });
+
+  });
+</script>
+
+<% include ./partials/eth-send-script %>
+<% } %>
+<% } else { %>
+<div>You don't have any connected devices.</div>
+<% } %>

@@ -1,0 +1,67 @@
+<h1>Tracking map</h1>
+<hr>
+<% include ./partials/eth-init %>
+<div class="card border-primary mb-3" id="map-settings-box" style="width: 100%;">
+    <div class="card-header text-white bg-primary">Map settings</div>
+    <div class="card-body">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-sm form-group">
+                        <%- include('partials/selection', {selectionObjects: devices, selectionName: 'deviceName'}); %>
+                </div>
+                <div class="col-sm-3 text-left">
+                        <fieldset class="form-group mt-3">
+                            <div class="form-row">
+                                <div class="col">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="checkbox" id="showMarkers" checked>
+                                            Show markers
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check disabled">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="checkbox" id="showPathes">
+                                            Show pathes
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                <div class="col-sm form-group">
+                    <div class="m-1">
+                        <label for="device" class="float-left">Time interval</label>
+                        <input id="datetimes" class="form-control w-100 mb-3" />
+                    </div>
+                </div>
+                
+                <div class="col-sm-2">
+                    <button class="btn btn-primary mt-3 btn btn-primary btn-lg btn-block" id="show-map-button">Show</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var $showMapButton = $('#show-map-button');
+    $('#datetimes').daterangepicker({
+        timePicker: true,
+        startDate: moment().startOf('hour').add(-32, 'hour'),
+        endDate: moment().startOf('hour'),
+        locale: {
+            format: 'M/DD hh:mm A'
+        }
+    });
+
+    $showMapButton.click(function () {
+            showMapSelection();
+        });
+</script>
+
+<% include ./partials/leaflet-map %>
+<% include ./partials/eth-map-script %>

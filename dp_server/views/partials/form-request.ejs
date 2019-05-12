@@ -1,0 +1,20 @@
+function formRequest(path, method, params) {
+    
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+            console.log(hiddenField);
+            form.appendChild(hiddenField);
+        }
+    }
+    console.log(form);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}

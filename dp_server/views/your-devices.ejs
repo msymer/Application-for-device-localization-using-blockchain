@@ -1,0 +1,156 @@
+<h1>User: <%= username %> </h1>
+<hr>
+<div>
+  <div class="card border-primary mb-3" style="width: 100%;">
+    <div class="card-header text-white bg-primary">Your connected devices</div>
+    <div class="card-body">
+      <% if ((typeof devices != 'undefined') && (devices.length > 0)) { %>
+        <div id="renameDeviceModal" class="modal fade" role="dialog">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title">Rename device</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+              </div>
+              <div class="modal-body">
+                <span hidden id="numberHashHidden">hidden</span>
+                <input type="text" class="form-control border-primary" id="deviceNameTextboxModal">
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-primary m-1" id="rename-device-button">Rename device</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+        
+          </div>
+        </div>
+
+      <table id="table">
+        <thead>
+          <tr>
+            <th data-field="name">Device name</th>
+            <th data-field="receivingKey" data-formatter="recKeyFormatter">Receiving key</th>
+            <th data-field="operate" data-formatter="operateFormatter" class="text-center" data-events="operateEvents">Operations</th>
+          </tr>
+        </thead>
+      </table>
+
+      <script>
+        var $table = $('#table');
+        var data = <%- JSON.stringify(devices) %>;
+
+        function recKeyFormatter(value) {
+          return `<samp>${value}</samp>`;
+        }
+
+        <% include ./partials/form-request %>
+
+        function operateFormatter(value, row, index) {
+          return [
+            '<button class="device-data-button btn btn-primary m-1">',
+            'Device data',
+            '</button>',
+            '<button class="rename-device-modal-button btn btn-secondary m-1" data-toggle="modal" data-target="#renameDeviceModal">',
+            'Rename device',
+            '</button>',
+            '<button class="remove-button btn btn-danger m-1">',
+            'Remove device',
+            '</button>'
+          ].join('')
+        }
+
+        window.operateEvents = {
+          'click .rename-device-modal-button': function (e, value, row, index) {
+            $("#deviceNameTextboxModal").val(row.name);
+            $("#numberHashHidden").val(row.deviceNumberHash);
+          },
+          'click .remove-button': function (e, value, row, index) {
+            $.ajax({
+              method: "DELETE",
+              url: "/intr/remove-device",
+              data: { deviceNumberHash: row.deviceNumberHash },
+            }).done(function (data) {
+              location.reload();
+            }).fail(function(xhr, status, error) {
+              alert(JSON.parse(xhr.responseText).msg);
+            });
+          },
+          'click .device-data-button': function (e, value, row, index) {
+            formRequest('/device-data', 'GET', {deviceName: row.name});
+          }
+        }
+
+        $( "#rename-device-button" ).click(function() {
+          $.ajax({
+              method: "POST",
+              url: "/intr/rename-device",
+              data: { deviceName: $("#deviceNameTextboxModal").val(), deviceNumberHash: $("#numberHashHidden").val() },
+            }).done(function (data) {
+              location.reload();
+            }).fail(function(xhr, status, error) {
+              alert(JSON.parse(xhr.responseText).msg);
+            });
+        });
+
+        $(function () {
+          $('#table').bootstrapTable({ data: data });
+        });
+      </script>
+      <% } else { %>
+      <div>You don't have any connected devices.</div>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="card border-primary mb-3" style="width: 100%;">
+    <div class="card-header text-white bg-primary">Connection key</div>
+      <div class="card-body">
+        <p>This key is necessary for connecting a device to this accout. Please keep it in secret.</p>
+        <p><samp><input type="text" readonly value="<%= connectionKey %>" class="form-control-plaintext border p-1"></samp></p>
+        <p>
+          You can generate it again. The old one will not work anymore.
+        </p>
+        
+        <button id="button-generate" class="btn btn-primary m-1">Generate new connection key</button>
+      </div>
+  </div>
+  <div class="text-justify jumbotron">
+    <h4>1. Install mobile app</h4>
+    <p>
+      Install the mobile app into your tracking device.
+    </p>
+    <h4 class="mt-1">2. Connect the device to your account</h4>
+    <p>
+      Connect the device to your account or use the <a href="./api">API</a> to connect from your application.
+    </p>
+    <h4 class="mt-1">3. Track the device position</h4>
+    <p>
+      Use the application or the <a href="./api">API</a> to track your position.
+    </p>
+    <h4 class="mt-1">4. Send data to the blockchain</h4>
+      <p>
+        Select the device and send the localization data to the Ethereum blockchain <a href="./device-data">here</a>.
+      </p>
+    <h4 lass="mt-1">5. Operate with the data</h4>
+      <p>
+        Operate with the data from the blockchain using the <a href="./api">API</a> or the <a href="./map">tracking map</a>.
+      </p>
+  </div>
+  <script>
+    var $buttonGenerate = $('#button-generate');
+
+    $(function () {
+      $buttonGenerate.click(function () {
+        $.ajax({
+          method: "GET",
+          url: "/intr/generate-connection-key",
+          data: {},
+        }).done(function (data) {
+          location.reload();
+        }).fail(function (xhr, status, error) {
+          alert(JSON.parse(xhr.responseText).msg);
+        });
+      });
+    });
+  </script>
+</div>

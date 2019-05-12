@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="dp_mobile.SettingsPage"
+             Title="Settings">
+    <ContentPage.Content>
+        <StackLayout Orientation="Vertical" Padding="20">
+            <Button Text="Accounts settings"
+                    Margin="0, 0, 0, 20"
+                    Clicked="AccountsButton_Clicked"/>
+            <Entry Placeholder="Server URL" 
+                   TextChanged="ServerEntry_TextChanged"
+                   Text="{Binding}"
+                   x:Name="serverEntry"/>
+            <Button Text="Save server"
+                    x:Name="saveServerButton"
+                    IsEnabled="False"
+                    Clicked="SaveServerButton_Clicked"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

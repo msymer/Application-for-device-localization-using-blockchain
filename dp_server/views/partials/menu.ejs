@@ -1,0 +1,34 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary text-center">
+        <a class="navbar-brand mr-5" href="#">SERVER</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse text-center" id="navbarColor01">
+          <ul class="navbar-nav mr-auto">
+            <% if(loggedIn == true) { %>
+              <% if(page == 'your-devices') { %><li class="nav-item active"><% } else {%> <li class="nav-item"><% }%>
+                <a class="nav-link" href="/your-devices">Your devices</a>
+              </li>
+              <% if(page == 'map') { %><li class="nav-item active"><% } else {%> <li class="nav-item"><% }%>
+                <a class="nav-link" href="/map">Tracking map</a>
+              </li>
+              <% if(page == 'api') { %><li class="nav-item active"><% } else {%> <li class="nav-item"><% }%>
+                <a class="nav-link" href="/api">API</a>
+              </li>
+            <% } else {%>
+              <% if(page == 'login') { %><li class="nav-item active"><% } else {%> <li class="nav-item"><% }%>
+                <a class="nav-link" href="/login">Login</a>
+              </li>
+              <% if(page == 'register') { %><li class="nav-item active"><% } else {%> <li class="nav-item"><% }%>
+                <a class="nav-link" href="/register">Register</a>
+              </li>
+            <% }%>
+          </ul>
+          <form class="form-inline my-2 my-lg-0">
+            <% if(loggedIn == true) { %>
+              <a class="nav-link" href="/logout">Logout</a>
+            <% }%>
+          </form>
+        </div>
+      </nav>

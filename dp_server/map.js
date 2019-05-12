@@ -1,0 +1,31 @@
+class Coordinates {
+    constructor(latitude, longitude, time, note) {
+        this.lat = latitude;
+        this.lgt = longitude;
+        this.time = time;
+        this.note = note;
+    }
+}
+
+//Returns array of pathes from array of array of coordinates.
+function getPathes(arrayOfArrayOfCoords){
+    const result = [];
+    arrayOfArrayOfCoords.forEach((arr) => {
+        result.push(sortCoordinates(arr));
+    });
+    return result;
+}
+
+//Returns sorted array of coordinates based on time.
+function sortCoordinates(coordinates){
+    let coords = coordinates;
+    coords.sort((a, b) => {
+        (a.time > b.time) ? 1 : ((b.time > a.time) ? -1 : 0)
+    });
+    return coords;
+}
+
+module.exports = {
+    Coordinates,
+    getPathes
+};

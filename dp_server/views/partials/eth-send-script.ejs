@@ -1,0 +1,185 @@
+<% include ./eth-functions %>
+<script>
+    let event;
+    let dataOk = false;
+    let sentRecordsCount = 0;
+    let recordsToSendCount = 0;
+    let proceededRecordsCount = 0;
+
+    //Inits the contract.
+    function initContract() {
+        initConnection();
+        if (connectionIsOk) {
+            showSuccessMsg('You are connected to the blockchain now. If you change something, please reload the page.');
+            $('#button-send-blockchain').html('Check the records before sending');
+        }
+    }
+
+    //Checks the records before sending by the blockchain.
+    async function checkRecordsBeforeSending() {
+        showInfoMsg('Checking records to send, please wait...');
+        $("#button-send-blockchain").attr("disabled", "disabled");
+
+        const deleted = await checkAndDeleteSentData();
+        if (deleted) {
+            hideMsgs();
+            showErrorMsg(`Old records were deleted. Please reload the page.`);
+            return;
+        }
+        let icorrectIndex = 0;
+        const idHash = await getIdentificationHash(false);
+        let result = await eth_checkInputData(idHash,
+            transferCoordinateToInt(data[0].latitude),
+            transferCoordinateToInt(data[0].longitude),
+            transferTimeToInt(data[0].time),
+            2);
+        if (result) {
+            for (let i = 1; i < data.length; i++) {
+                result = await eth_checkOutsideInputData(2,
+                    transferCoordinateToInt(data[i - 1].latitude),
+                    transferCoordinateToInt(data[i - 1].longitude),
+                    transferTimeToInt(data[i - 1].time),
+                    transferCoordinateToInt(data[i].latitude),
+                    transferCoordinateToInt(data[i].longitude),
+                    transferTimeToInt(data[i].time));
+                if (!result) {
+                    icorrectIndex = i;
+                    break;
+                }
+            }
+        }
+
+        hideMsgs();
+        $("#button-send-blockchain").removeAttr("disabled");
+        if (result) {
+            showSuccessMsg('Records are ready to send to the blockchain.');
+            $('#button-send-blockchain').html('Send to the blockchain');
+            dataOk = true;
+        } else {
+            showErrorMsg(`The record with the time ${data[icorrectIndex].time} has not passed the check.`);
+        }
+    }
+
+    //Creates transactions and sends the records to the blockchain.
+    async function sendRecordsToBlockchain() {
+        let idHash = await getIdentificationHash(true);
+        $("#button-send-blockchain").attr("disabled", "disabled");
+        showInfoMsg('Processing the records to the blockchan. It can take several minutes depending on the blockchain, please wait...');
+        event = contract.DataSaved({ sender: account });
+        event.watch((err, result) => {
+            if (!err) {
+                sentRecordsCount++;
+                if ((sentRecordsCount == recordsToSendCount) && (proceededRecordsCount == data.length)) {
+                    hideMsgs();
+                    showInfoMsg('Deleting the records from our database...');
+                    checkAndDeleteSentData();
+                    hideMsgs();
+                    showSuccessMsg('The records were successfully sent to the blockchain and deleted from our database. You can leave the page now.');
+                }
+            } else {
+                console.log(err);
+            }
+        });
+        try {
+            let batch = web3.createBatch();
+            for (let i = 0; i < data.length; i++) {
+                batch.add(contract.saveData.sendTransaction(
+                    idHash,
+                    transferCoordinateToInt(data[data.length - i - 1].latitude),
+                    transferCoordinateToInt(data[data.length - i - 1].longitude),
+                    transferTimeToInt(data[data.length - i - 1].time),
+                    data[data.length - i - 1].note,
+                    transaction_config,
+                    (error, result) => {
+                        proceededRecordsCount++;
+                        if (error) {
+                            if ((sentRecordsCount == recordsToSendCount) && (proceededRecordsCount == data.length)) {
+                                hideMsgs();
+                                showInfoMsg('Deleting the records from our database...');
+                                checkAndDeleteSentData();
+                                hideMsgs();
+                                showSuccessMsg('The records were successfully sent to the blockchain and deleted from our database. You can leave the page now.');
+                            }
+                            return console.log(error);
+                        }
+                        console.log("txhash: " + result);
+                        recordsToSendCount++;
+                    }
+                ));
+            }
+            batch.execute();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    //Blockchain button click event.
+    async function blockchainButtonClick() {
+        hideMsgs();
+        if (!connectionIsOk) {
+            initContract();
+        } else if (!dataOk) {
+            await checkRecordsBeforeSending();
+        } else {
+            await sendRecordsToBlockchain();
+        }
+    }
+
+    //Returns identification hash of the device.
+    async function getIdentificationHash(rewrite) {
+        try {
+            const newTime = data[0].time;
+            const result = await $.ajax({
+                method: 'GET',
+                url: '/intr/get-identification-hash',
+                data: { deviceName: deviceName, newRecordTime: newTime, rewrite: rewrite },
+            });
+            return result.identificationHash;
+        } catch (error) {
+            console.log(error);
+            throw new Error('Identification hash not found.');
+        }
+    }
+
+    //Transfers coordinates from js to solidity int.
+    function transferCoordinateToInt(coordinate) {
+        return Math.round(coordinate * 100000);
+    }
+
+    //Deletes record from db.
+    async function deleteDocument(id) {
+        await $.ajax({
+            method: "DELETE",
+            url: "/intr/delete-records",
+            data: { selected: `["${id}"]`, deviceName: deviceName }
+        });
+    }
+
+    //Deletes already sent data from db and returns true, if some data were deleted.
+    async function checkAndDeleteSentData() {
+        let deleted = false;
+        try {
+            const idHash = await getIdentificationHash();
+            const fromTime = transferTimeToInt(data[0].time);
+            const newerRecords = await eth_getDataCountWithSpeedCheck(idHash, fromTime, 0, 2);
+            const theNewestRecord = await eth_getDataWithSpeedCheck(idHash, getUint(newerRecords) - 1, fromTime, 0, 2);
+            const theNewestTime = getUint(theNewestRecord[0]);
+            for (let i = 0; i < data.length; i++) {
+                const recordTime = transferTimeToInt(data[i].time);
+                if (recordTime <= theNewestTime) {
+                    try {
+                        await deleteDocument(data[i]._id);
+                        deleted = true;
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
+            }
+        } catch (error) {
+            console.log(error);
+            return deleted;
+        }
+        return deleted;
+    }
+
+</script>

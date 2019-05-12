@@ -1,0 +1,62 @@
+<div id="mapdiv">
+    <div id="mapid" class="mx-auto border border-primary"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+    integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+    crossorigin=""></script>
+
+<script>
+    let map;
+    buildMap();
+
+    function buildMap() {
+        document.getElementById("mapdiv").style.height = `${(document.documentElement.clientHeight - 100) < 340 ? 340 : (document.documentElement.clientHeight - 100)}px`;
+        const layer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+        map = L.map('mapid');
+        map.addLayer(layer);
+    }
+
+
+    function showMap(showMarkersProp, showPathesProp) {
+        map.remove();
+        buildMap();
+        let arrayMarkers = [];
+        if (showMarkersProp) {
+            locationData.forEach((c) => {
+                const marker = L.marker([c.lat, c.lgt]);
+                arrayMarkers.push(marker);
+                let text = c.note ? `<b>${c.note}</b><br>` : '';
+                text = text + c.time;
+                marker.addTo(map).bindPopup(text).openPopup();
+            });
+        }
+        let arrayPathes = [];
+        if (showPathesProp) {
+            let pathes = [];
+            locationData.forEach((p) => {
+                pathes.push([p.lat, p.lgt]);
+                let text = p.note ? `<b>${p.note}</b><br>` : '';
+                text = text + p.time;
+                const polyline = L.polyline(pathes, { color: 'red' }).addTo(map);
+                arrayPathes.push(polyline);
+            });
+        }
+        if (arrayMarkers.length > 0) {
+            const group = new L.featureGroup(arrayMarkers);
+            map.fitBounds(group.getBounds());
+        }
+        else if (arrayPathes.length > 0) {
+            const group = new L.featureGroup(arrayPathes);
+            map.fitBounds(group.getBounds());
+        } else {
+            map.setView(new L.LatLng(0, 0), 2);
+        }
+    }
+
+    window.onresize = function (event) {
+        document.getElementById("mapdiv").style.height = `${(document.documentElement.clientHeight - 100) < 340 ? 340 : (document.documentElement.clientHeight - 100)}px`;
+    };
+</script>
